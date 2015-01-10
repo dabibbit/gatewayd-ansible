@@ -2,6 +2,8 @@
 
 ## Features
 
+- Provision an AWS instance for running gatewayd
+
 - Install and configure nginx webserver
   - Generate Self-Signed SSL Certificate
   - Add gateway (sub)domain in nginx config
