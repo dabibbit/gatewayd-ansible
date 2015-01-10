@@ -1,4 +1,7 @@
 ---
+  - name: ensure apt cache is up to date
+    action: apt update_cache=yes
+
   - name: Base OS packages
     apt: name=$item state=present
     with_items:
@@ -10,6 +13,7 @@
      - libpq-dev
      - postgresql
      - postgresql-client
+     - nginx
 
   - name: git | clone the repo
     git: accept_hostkey=yes dest=/opt/gatewayd update=yes version=846fdcdceb4b98c600dc147dc1a30efa94bb2565 git://github.com/ripple/gatewayd
@@ -35,7 +39,21 @@
      - pm2
 
   - name: Postgres | Create Database
-    postgresql_db: name=gatewayd_db state=present encoding='UTF-8' owner=gatewayd_user
+    postgresql_db: name=gatewayd_db state=present encoding='UTF-8'
 
   - name: Postgres | Create User
-    postgresql_user: db=gatewayd_db name=gatewayd_user password=sipeyourface state=present
+    postgresql_user: db=gatewayd_db name=gatewayd_user password=sipeyourface state=present priv=ALL
+
+  - name: create self-signed SSL cert
+    command: openssl req -new -nodes -x509 -subj "/C=US/ST=California/L=SanFrancisco/O=Engineering/CN=staging.gatewayzen.com" -days 3650 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -extensions v3_ca creates=/etc/nginx/ssl/server.crt
+    notify: reload nginx
+
+  - name: Copy the upstart for gatewayd in to place
+    file: src=gatewayd.conf dest=/etc/init/ mode=644 owner=root group=root
+
+#  - name: Configure Gatewayd
+#    things: stuff
+#    vars:
+#      alice: female
+#      bob: male 
+#      or use ansible facts!
