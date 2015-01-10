@@ -1,0 +1,10 @@
+# Actions: Eat bugs.
+# Author: NBR 
+# Date/Ver: Jan-06-2014
+---
+- name: GatewayD Configs
+  hosts: gatewayd-test
+  remote_user: ansible
+  sudo: yes
+  roles:
+    - gatewayd

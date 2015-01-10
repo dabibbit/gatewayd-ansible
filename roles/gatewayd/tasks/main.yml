@@ -1,0 +1,41 @@
+---
+  - name: Base OS packages
+    apt: name=$item state=present
+    with_items:
+     - git 
+     - python-software-properties
+     - python
+     - g++
+     - make
+     - libpq-dev
+     - postgresql
+     - postgresql-client
+
+  - name: git | clone the repo
+    git: accept_hostkey=yes dest=/opt/gatewayd update=yes version=846fdcdceb4b98c600dc147dc1a30efa94bb2565 git://github.com/ripple/gatewayd
+# note: what if dir doesnt exist? make it first? test me
+
+  - name: Node.js | Add the node.js PPA
+    apt_repository: repo=ppa:chris-lea/node.js
+
+  - name: Node.js | Install nodejs and npm
+    apt: pkg=nodejs update_cache=yes
+
+  - name: Node.js | Install packaged npm dependencies
+    npm: path=/opt/gatewayd
+
+  - name: Node.js | Install packages
+    npm: name=$item state=present global=yes
+    with_items: 
+     - pg
+     - grunt-cli
+     - forever
+     - db-migrate 
+     - jshin
+     - pm2
+
+  - name: Postgres | Create Database
+    postgresql_db: name=gatewayd_db state=present encoding='UTF-8' owner=gatewayd_user
+
+  - name: Postgres | Create User
+    postgresql_user: db=gatewayd_db name=gatewayd_user password=sipeyourface state=present
