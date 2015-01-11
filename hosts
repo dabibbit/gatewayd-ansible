@@ -1,2 +1,5 @@
+[local]
+localhost
+
 [gatewayd-test]
 123.123.123.123
