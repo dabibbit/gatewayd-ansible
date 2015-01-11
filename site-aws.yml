@@ -1,0 +1,22 @@
+# demo_setup.yml
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  tasks:
+
+    - name: Provision a set of instances
+      ec2:
+         #ssh key to use on the new machine
+         key_name: nathan_reese_gatewayzen
+         instance_type: t2.micro
+         image: ami-736e6536
+         wait: true
+         region: us-west-1a
+         security_group: sg_gateway
+         count_tag:
+            Name: Demo
+         instance_tags:
+            Name: Demo
+      register: ec2
