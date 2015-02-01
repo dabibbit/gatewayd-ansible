@@ -4,7 +4,7 @@
 ---
 - name: GatewayD Configs
   hosts: gatewayd-test
-  remote_user: ansible
+  remote_user: ubuntu
   sudo: yes
   roles:
     - gatewayd

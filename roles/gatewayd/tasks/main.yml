@@ -3,7 +3,7 @@
     action: apt update_cache=yes
 
   - name: Base OS packages
-    apt: name=$item state=present
+    apt: name={{ item }} state=present
     with_items:
      - git 
      - python-software-properties
@@ -14,10 +14,10 @@
      - postgresql
      - postgresql-client
      - nginx
+     - python-psycopg2
 
   - name: git | clone the repo
-    git: accept_hostkey=yes dest=/opt/gatewayd update=yes version=846fdcdceb4b98c600dc147dc1a30efa94bb2565 git://github.com/ripple/gatewayd
-# note: what if dir doesnt exist? make it first? test me
+    git: accept_hostkey=yes dest=/opt/gatewayd update=yes version=846fdcdceb4b98c600dc147dc1a30efa94bb2565 repo=git://github.com/ripple/gatewayd
 
   - name: Node.js | Add the node.js PPA
     apt_repository: repo=ppa:chris-lea/node.js
@@ -29,31 +29,38 @@
     npm: path=/opt/gatewayd
 
   - name: Node.js | Install packages
-    npm: name=$item state=present global=yes
+    npm: name={{ item }} state=present global=yes
     with_items: 
      - pg
      - grunt-cli
      - forever
      - db-migrate 
-     - jshin
+     - jshint
      - pm2
 
   - name: Postgres | Create Database
+    sudo: yes
+    sudo_user: postgres
     postgresql_db: name=gatewayd_db state=present encoding='UTF-8'
 
   - name: Postgres | Create User
+    sudo: yes
+    sudo_user: postgres
     postgresql_user: db=gatewayd_db name=gatewayd_user password=sipeyourface state=present priv=ALL
+
+  - name: SSL directory
+    file: path=/etc/nginx/ssl/ owner=root group=root mode=740 state=directory
 
   - name: create self-signed SSL cert
     command: openssl req -new -nodes -x509 -subj "/C=US/ST=California/L=SanFrancisco/O=Engineering/CN=staging.gatewayzen.com" -days 3650 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -extensions v3_ca creates=/etc/nginx/ssl/server.crt
-    notify: reload nginx
+    notify: restart nginx
 
   - name: Copy the upstart for gatewayd in to place
-    file: src=gatewayd.conf dest=/etc/init/ mode=644 owner=root group=root
+    copy: src=gatewayd.conf dest=/etc/init/ mode=644 owner=root group=root
 
 #  - name: Configure Gatewayd
 #    things: stuff
 #    vars:
 #      alice: female
 #      bob: male 
-#      or use ansible facts!
+#      or use ansible facts! --extra-vars "client_id=$uid"
