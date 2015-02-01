@@ -14,5 +14,5 @@
          group: sg-7f4a041a
          vpc_subnet_id: subnet-301fc147
          instance_tags:
-            Name: {{ uid }}
+            Name: "{{ uid }}"
       register: ec2
