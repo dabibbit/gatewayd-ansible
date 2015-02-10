@@ -1,0 +1,8 @@
+---
+- name: Get gatewayd from github
+  git: >
+    repo=https://github.com/ripple/gatewayd.git
+    dest=/home/ubuntu/gatewayd
+
+- name: npm install
+  npm: path=/home/ubuntu/gatewayd

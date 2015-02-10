@@ -1,9 +1,0 @@
----
-- hosts: webservers
-  remote_user: ubuntu
-  sudo: yes
-  roles:
-    - node-js
-    - postgres
-    - nginx
-    - gatewayd
