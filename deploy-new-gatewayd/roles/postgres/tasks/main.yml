@@ -1,34 +1,21 @@
 ---
-- hosts: webservers
-  sudo: yes
-  gather_facts: no
+- name: ensure apt cache is up to date
+  apt: update_cache=yes
 
-  tasks:
-  - name: ensure apt cache is up to date
-    apt: update_cache=yes
-  - name: ensure packages are installed
-    apt: name={{item}}
-    with_items:
-        - postgresql
-        - libpq-dev
-        - python-psycopg2
+- name: ensure packages are installed
+  apt: name={{item}}
+  with_items:
+      - libpq-dev
+      - postgresql
+      - postgresql-client
+      - python-psycopg2
 
-- hosts: webservers
+- name: Postgres | Create Database
   sudo: yes
   sudo_user: postgres
-  gather_facts: no
+  postgresql_db: name=gatewayd_db state=present encoding='UTF-8'
 
-  vars:
-    dbname: gatewayd_db
-    dbuser: gatewayd_user
-    dbpassword: password
-
-  tasks:
-  - name: ensure database is created
-    postgresql_db: name={{dbname}}
-
-  - name: ensure user has access to database
-    postgresql_user: db={{dbname}} name={{dbuser}} password={{dbpassword}} priv=ALL
-
-  - name: ensure user does not have unnecessary privilege
-    postgresql_user: name={{dbuser}} role_attr_flags=NOSUPERUSER,NOCREATEDB
+- name: Postgres | Create User
+  sudo: yes
+  sudo_user: postgres
+  postgresql_user: db=gatewayd_db name=gatewayd_user password=password state=present priv=ALL

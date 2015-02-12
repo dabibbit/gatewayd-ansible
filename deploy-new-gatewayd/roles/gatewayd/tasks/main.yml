@@ -3,6 +3,26 @@
   git: >
     repo=https://github.com/ripple/gatewayd.git
     dest=/home/ubuntu/gatewayd
+    version=develop
 
 - name: npm install
   npm: path=/home/ubuntu/gatewayd
+
+- name: npm install global dependencies
+  npm: name={{ item }} global=yes state=present
+  with_items:
+    - pm2
+    - grunt
+    - grunt-cli
+
+- name: migrate database
+  command: grunt migrate
+  args:
+    chdir: /home/ubuntu/gatewayd
+
+- name: start gatewayd
+  command: bin/gateway start
+  args:
+    chdir: /home/ubuntu/gatewayd
+
+

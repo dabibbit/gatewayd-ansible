@@ -6,7 +6,7 @@
     - name: Create security group
       local_action:
         module: ec2_group
-        name: gwd_test_group
+        name: gwd
         description: Access to anisble deployed gatewayd instances
         region: us-west-2
         rules:
@@ -19,11 +19,14 @@
       local_action:
         module: ec2
         instance_type: m3.medium
-        image: ami-9a562df2
+        key_name: ansible_gatewayd
+        image: ami-29ebb519
+        region: us-west-2
         wait: yes
-        group: webserver
+        group: gwd
         count: 1
         assign_public_ip: yes
+        vpc_subnet_id: subnet-93594ae7
       register: ec2
 
     - name: Add tag to instances
@@ -31,7 +34,18 @@
       with_items: ec2.instances
       args:
         tags:
-          Name: test_gwd_server
+          Name: gwd
 
     - name: Wait for SSH to be available
       pause: minutes=1
+
+- name: Configure new gatewayd
+  hosts: gwd
+  user: ubuntu
+  sudo: True
+  roles:
+    - os
+    - node-js
+    - postgres
+    - nginx
+    - gatewayd
