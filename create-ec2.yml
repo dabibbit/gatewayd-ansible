@@ -20,8 +20,7 @@
          image: ami-29ebb519
          wait: true
          region: us-west-2
-         group_id: sg-90c7e3f5
-# sg-3ec1e55b  add me
+         group_id: ['sg-90c7e3f5','sg-3ec1e55b']
          vpc_subnet_id: subnet-4e60e32b
          instance_tags:
             Name: "{{ uid }}"
