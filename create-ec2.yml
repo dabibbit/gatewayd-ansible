@@ -1,0 +1,43 @@
+# Included from site-new.yml as role "aws"
+#
+# This playbook needs a few "extra vars" passed in.
+# You should run it like this:
+# ansible-playbook -i hosts site-new.yml --extra-vars "uid=$uid"
+# You will replace $uid with the actual ID you want to use, to make this
+# instance unique, and tag it for a specific customer.
+#
+---
+- name: Create a new server.
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: Launch Instance
+      ec2:
+        #ssh key to use on the new machine
+         key_name: ansible_gatewayzen
+         instance_type: t2.micro
+         image: ami-29ebb519
+         wait: true
+         region: us-west-2
+         group_id: sg-90c7e3f5
+# sg-3ec1e55b  add me
+         vpc_subnet_id: subnet-4e60e32b
+         instance_tags:
+            Name: "{{ uid }}"
+         assign_public_ip: yes
+      register: ec2
+    - name: Add new instance to host group
+      add_host: hostname={{ item.public_ip }} groupname=gatewayd
+      with_items: ec2.instances
+    - name: Wait for SSH to come up
+      wait_for: host={{ item.public_ip }} port=22 delay=30 timeout=120 state=started
+      with_items: ec2.instances
+
+- name: Run the system config now.
+  hosts: gatewayd
+  sudo: True
+  gather_facts: True
+  remote_user: ubuntu
+  roles:
+    - gatewayd

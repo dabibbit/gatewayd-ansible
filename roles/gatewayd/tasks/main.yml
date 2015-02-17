@@ -17,7 +17,12 @@
      - python-psycopg2
 
   - name: git | clone the repo
-    git: accept_hostkey=yes dest=/opt/gatewayd update=yes version=846fdcdceb4b98c600dc147dc1a30efa94bb2565 repo=git://github.com/ripple/gatewayd
+    git: >
+      accept_hostkey=yes
+      dest=/opt/gatewayd
+      update=yes
+      version=846fdcdceb4b98c600dc147dc1a30efa94bb2565
+      repo=git://github.com/ripple/gatewayd
 
   - name: Node.js | Add the node.js PPA
     apt_repository: repo=ppa:chris-lea/node.js
@@ -52,7 +57,7 @@
     file: path=/etc/nginx/ssl/ owner=root group=root mode=740 state=directory
 
   - name: create self-signed SSL cert
-    command: openssl req -new -nodes -x509 -subj "/C=US/ST=California/L=SanFrancisco/O=Engineering/CN=staging.gatewayzen.com" -days 3650 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -extensions v3_ca creates=/etc/nginx/ssl/server.crt
+    command: openssl req -new -nodes -x509 -subj "/C=US/ST=California/L=SanFrancisco/O=Engineering/CN=gatewayzen.com" -days 3650 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -extensions v3_ca creates=/etc/nginx/ssl/server.crt
     notify: restart nginx
 
   - name: Copy the upstart for gatewayd in to place
@@ -63,4 +68,5 @@
 #    vars:
 #      alice: female
 #      bob: male 
-#      or use ansible facts! --extra-vars "client_id=$uid"
+#      or use ansible facts! 
+#      or pass em in --extra-vars "client_id=$uid"
