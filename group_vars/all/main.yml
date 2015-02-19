@@ -2,6 +2,15 @@
 ripple_rest_url: "https://api.ripple.com/"
 branch: "develop"
 gatewayd:
-  cold_wallet: "r..123"
-  hot_wallet: "r..567"
-  hot_wallet_secret: "<secret>"
+  cold_wallet: "raHhBGnJupnyUeJvWaqRcdyjNMpUQyPZ5Y"
+  hot_wallet: "rsMz7eRyWuH9jevvY7mXnqj5t7AweUjSGh"
+  hot_wallet_secret: "snR7Tgkagf3676mjYKbkBVi9dZjD8"
+aws:
+  security_group: "sg-6cd26706"
+  region: "us-east-1"
+  ami_id: "ami-84562dec"
+  instance_type: "m1.small"
+  key_name: "amazon_web_services"
+  instance_name_tag: "gatewayd-123"
+  subnet_id: "subnet-93594ae7"
+
