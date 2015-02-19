@@ -1,72 +1,60 @@
 ---
-  - name: ensure apt cache is up to date
-    action: apt update_cache=yes
+- name: Get gatewayd from github
+  git: >
+    repo=https://github.com/ripple/gatewayd.git
+    dest=/home/ubuntu/gatewayd
+    version={{ branch }}
 
-  - name: Base OS packages
-    apt: name={{ item }} state=present
-    with_items:
-     - git 
-     - python-software-properties
-     - python
-     - g++
-     - make
-     - libpq-dev
-     - postgresql
-     - postgresql-client
-     - nginx
-     - python-psycopg2
+- name: npm install
+  npm: path=/home/ubuntu/gatewayd
 
-  - name: git | clone the repo
-    git: >
-      accept_hostkey=yes
-      dest=/opt/gatewayd
-      update=yes
-      version=846fdcdceb4b98c600dc147dc1a30efa94bb2565
-      repo=git://github.com/ripple/gatewayd
+- name: npm install global dependencies
+  npm: name={{ item }} global=yes state=present
+  with_items:
+    - pm2
+    - grunt
+    - grunt-cli
 
-  - name: Node.js | Add the node.js PPA
-    apt_repository: repo=ppa:chris-lea/node.js
+- name: migrate database
+  command: grunt migrate
+  args:
+    chdir: /home/ubuntu/gatewayd
 
-  - name: Node.js | Install nodejs and npm
-    apt: pkg=nodejs update_cache=yes
+- name: copy config file to set SSL to false
+  copy: src=config.json dest=/home/ubuntu/gatewayd/config
 
-  - name: Node.js | Install packaged npm dependencies
-    npm: path=/opt/gatewayd
+- name: Create logs directory
+  file: path=/home/ubuntu/gatewayd/logs state=directory
 
-  - name: Node.js | Install packages
-    npm: name={{ item }} state=present global=yes
-    with_items: 
-     - pg
-     - grunt-cli
-     - forever
-     - db-migrate 
-     - jshint
-     - pm2
+- name: Create .pm2 directory
+  file: path=/home/ubuntu/.pm2 state=directory
 
-  - name: Postgres | Create Database
-    sudo: yes
-    sudo_user: postgres
-    postgresql_db: name=gatewayd_db state=present encoding='UTF-8'
+- name: Create .pm2 log file
+  file: path=/home/ubuntu/.pm2/pm2.log state=touch
 
-  - name: Postgres | Create User
-    sudo: yes
-    sudo_user: postgres
-    postgresql_user: db=gatewayd_db name=gatewayd_user password=sipeyourface state=present priv=ALL
+- name: Give the logs folder read/write access
+  command: chmod -R 777 /home/ubuntu/gatewayd/logs
 
-  - name: SSL directory
-    file: path=/etc/nginx/ssl/ owner=root group=root mode=740 state=directory
+- name: Give the .pm2 folder read/write access
+  command: chmod -R 777 /home/ubuntu/.pm2
 
-  - name: create self-signed SSL cert
-    command: openssl req -new -nodes -x509 -subj "/C=US/ST=California/L=SanFrancisco/O=Engineering/CN=gatewayzen.com" -days 3650 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -extensions v3_ca creates=/etc/nginx/ssl/server.crt
-    notify: restart nginx
+- name: Give the .pm2 folder read/write access
+  command: chmod -R 777 /home/ubuntu/gatewayd/config
 
-  - name: Copy the upstart for gatewayd in to place
-    copy: src=gatewayd.conf dest=/etc/init/ mode=644 owner=root group=root
+- name: Set cold wallet
+  sudo: False
+  command: bin/gateway set_cold_wallet {{ gatewayd.cold_wallet }}
+  args:
+    chdir: /home/ubuntu/gatewayd
 
-#  - name: Configure Gatewayd
-#    things: stuff
-#    vars:
-#      alice: female
-#      bob: male 
-#      or use ansible facts! 
-#      or pass em in --extra-vars "client_id=$uid"
+- name: Set hot wallet
+  sudo: False
+  command: bin/gateway set_hot_wallet {{ gatewayd.hot_wallet }} {{ gatewayd.hot_wallet_secret }}
+  args:
+    chdir: /home/ubuntu/gatewayd
+
+- name: start gatewayd
+  sudo: False
+  command: bin/gateway start
+  args:
+    chdir: /home/ubuntu/gatewayd
