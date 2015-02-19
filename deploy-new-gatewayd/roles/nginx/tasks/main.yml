@@ -4,11 +4,9 @@
 
 - name: Remove Default Site Configuration
   file: path=/etc/nginx/sites-available/default state=absent
-  notify: restart nginx
 
 - name: Add sites available
   copy: src=default dest=/etc/nginx/sites-available
-  notify: restart nginx
 
 - name: SSL directory
   file: path=/etc/nginx/ssl/ owner=root group=root mode=740 state=directory

@@ -3,7 +3,7 @@
   git: >
     repo=https://github.com/ripple/gatewayd.git
     dest=/home/ubuntu/gatewayd
-    version=develop
+    version={{ branch }}
 
 - name: npm install
   npm: path=/home/ubuntu/gatewayd
@@ -20,9 +20,41 @@
   args:
     chdir: /home/ubuntu/gatewayd
 
-- name: start gatewayd
-  command: bin/gateway start
+- name: copy config file to set SSL to false
+  copy: src=config.json dest=/home/ubuntu/gatewayd/config
+
+- name: Create logs directory
+  file: path=/home/ubuntu/gatewayd/logs state=directory
+
+- name: Create .pm2 directory
+  file: path=/home/ubuntu/.pm2 state=directory
+
+- name: Create .pm2 log file
+  file: path=/home/ubuntu/.pm2/pm2.log state=touch
+
+- name: Give the logs folder read/write access
+  command: chmod -R 777 /home/ubuntu/gatewayd/logs
+
+- name: Give the .pm2 folder read/write access
+  command: chmod -R 777 /home/ubuntu/.pm2
+
+- name: Give the .pm2 folder read/write access
+  command: chmod -R 777 /home/ubuntu/gatewayd/config
+
+- name: Set cold wallet
+  sudo: False
+  command: bin/gateway set_cold_wallet {{ gatewayd.cold_wallet }}
   args:
     chdir: /home/ubuntu/gatewayd
 
+- name: Set hot wallet
+  sudo: False
+  command: bin/gateway set_hot_wallet {{ gatewayd.hot_wallet }} {{ gatewayd.hot_wallet_secret }}
+  args:
+    chdir: /home/ubuntu/gatewayd
 
+- name: start gatewayd
+  sudo: False
+  command: bin/gateway start
+  args:
+    chdir: /home/ubuntu/gatewayd

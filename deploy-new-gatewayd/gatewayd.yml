@@ -6,6 +6,5 @@
   roles:
     - common
     - node-js
-    - postgres
     - nginx
     - gatewayd
