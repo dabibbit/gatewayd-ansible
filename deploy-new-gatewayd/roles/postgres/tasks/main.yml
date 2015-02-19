@@ -1,0 +1,21 @@
+---
+- name: ensure apt cache is up to date
+  apt: update_cache=yes
+
+- name: ensure packages are installed
+  apt: name={{item}}
+  with_items:
+      - libpq-dev
+      - postgresql
+      - postgresql-client
+      - python-psycopg2
+
+- name: Postgres | Create Database
+  sudo: yes
+  sudo_user: postgres
+  postgresql_db: name=gatewayd_db state=present encoding='UTF-8'
+
+- name: Postgres | Create User
+  sudo: yes
+  sudo_user: postgres
+  postgresql_user: db=gatewayd_db name=gatewayd_user password=password state=present priv=ALL

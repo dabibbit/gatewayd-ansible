@@ -1,0 +1,7 @@
+---
+ripple_rest_url: "https://api.ripple.com/"
+branch: "develop"
+gatewayd:
+  cold_wallet: "r..123"
+  hot_wallet: "r..567"
+  hot_wallet_secret: "<secret>"

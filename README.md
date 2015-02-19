@@ -1,5 +1,7 @@
 # The gatewayd-ansible playbook
 
+Ansible playbook for deploying and configuring gatewayd on EC2 servers.
+
 ## Features
 
 - Provision an AWS instance for running gatewayd

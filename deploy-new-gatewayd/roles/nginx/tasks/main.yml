@@ -1,0 +1,19 @@
+---
+- name: install Nginx
+  apt: pkg=nginx state=installed
+
+- name: Remove Default Site Configuration
+  file: path=/etc/nginx/sites-available/default state=absent
+
+- name: Add sites available
+  copy: src=default dest=/etc/nginx/sites-available
+
+- name: SSL directory
+  file: path=/etc/nginx/ssl/ owner=root group=root mode=740 state=directory
+
+- name: Copy the upstart for gatewayd in to place
+  copy: src=gatewayd.conf dest=/etc/init/ mode=644 owner=root group=root
+
+- name: create self-signed SSL cert
+  command: openssl req -new -nodes -x509 -subj "/C=US/ST=California/L=SanFrancisco/O=Engineering/CN=staging.gatewayd.org" -days 3650 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -extensions v3_ca creates=/etc/nginx/ssl/server.crt
+  notify: restart nginx

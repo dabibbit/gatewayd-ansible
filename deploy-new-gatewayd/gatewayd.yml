@@ -1,0 +1,10 @@
+---
+- name: Deploy new gatewayd instance -- install gatewayd, install global dependencies and configure application
+  hosts: webservers
+  user: ubuntu
+  sudo: True
+  roles:
+    - common
+    - node-js
+    - nginx
+    - gatewayd
